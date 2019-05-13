@@ -6,12 +6,7 @@ from random import randrange as rand
 
 WIDTH = 1280
 HEIGHT = 720
-number = 20 # For better simulation - With less bugs
-
-def cos_ofvectangle(vec1, vec2):
-    mult = vec1[0] * vec2[0] + vec1[1] * vec2[1]
-    return mult / (((vec1[0]**2 + vec1[1]**2)**0.5) * ((vec2[0]**2 + vec2[1]**2)**0.5))
-
+number = 1 # For better simulation - With less bugs
 
 def projection(vec1, vec2):
     div = (vec1[0] * vec2[0] + vec1[1] * vec2[1]) / (vec2[0]**2 + vec2[1]**2)
@@ -24,12 +19,6 @@ def after_collision(obj1, obj2, img):
     perpv = (-vec[1], vec[0])
     vecv1 = (obj1.vx, obj1.vy)
     vecv2 = (obj2.vx, obj2.vy)
-
-    controlv = (vecv1[0] - vecv2[0], vecv1[1] - vecv2[1])
-    #if (controlv[0] > 0 and vec[0] > 0) or (controlv[1] > 0 and vec[1] > 0):
-    #    return
-    #if (controlv[0] < 0 and vec[0] < 0) or (controlv[1] < 0 and vec[1] < 0):
-    #    return
 
     uncv1 = projection(vecv1, perpv)
     uncv2 = projection(vecv2, perpv)
@@ -47,8 +36,12 @@ def after_collision(obj1, obj2, img):
     obj1.vy = chv1[1] + uncv1[1]
     obj2.vx = chv2[0] + uncv2[0]
     obj2.vy = chv2[1] + uncv2[1]
+
+    #gives new position to nested objects
     while ((obj1.x - obj2.x) ** 2 + (obj1.y - obj2.y) ** 2)**0.5 < obj1.r + obj2.r:
-        obj1.move(50);obj2.move(50)
+        obj1.move(100);obj2.move(100)
+
+    #Visulization
     #cv2.arrowedLine(img, (round(obj1.x), round(obj1.y)), (round(obj1.x + chv1[0]*30), round(obj1.y + chv1[1]*15)), (0, 255, 0), 1)
     #cv2.arrowedLine(img, (round(obj2.x), round(obj2.y)), (round(obj2.x + chv2[0]*30), round(obj2.y + chv2[1]*15)), (0, 255, 0), 1)
 
@@ -79,7 +72,7 @@ writer = cv2.VideoWriter("output.avi", cv2.VideoWriter_fourcc(*"MJPG"), 60,(WIDT
 #objs = [obj(5, 1, 0, 100, 500, 20, (255, 0, 0)), obj(5, 0, 0, 500, 500, 20, (0, 255, 0))]
 objs = [obj(500, 0, -40, 200, 400, 50, (255, 255, 255), 1)]
 for i in range(30):
-    objs.append(obj(rand(100, 500), 0, 0, WIDTH*i/100, HEIGHT*i/100, 5, (rand(255), rand(255), rand(255)), rand(9999999)))
+    objs.append(obj(rand(100, 500), 0, 0, WIDTH*i/30, HEIGHT*i/30, 20, (rand(255), rand(255), rand(255)), rand(9999999)))
 
 for frame in range(2000):
     print(frame)
