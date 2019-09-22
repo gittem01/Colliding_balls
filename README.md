@@ -1,2 +1,4 @@
-# Colliding_balls
-Still under the construction.........
+# Required repositories
+ - cv2
+ - numpy
+ - pydub
