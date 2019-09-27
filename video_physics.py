@@ -1,27 +1,25 @@
 import cv2
-import math
 import numpy as np
 import time
 from random import randrange as rand
 from pydub import AudioSegment
 from pydub.playback import play
 import os
+import sys
 
-WIDTH = 1280
-HEIGHT = 720
+WIDTH = 1080
+HEIGHT = 640
 FPS = 60
-number = 5000 # For better simulation (+) With less bugs (-)Slower
+number = 10 # For better simulation // (+) With less bug and more accuracy BUT slower //
 
 def projection(vec1, vec2):
     div = (vec1[0] * vec2[0] + vec1[1] * vec2[1]) / (vec2[0]**2 + vec2[1]**2)
     return (vec2[0] * div, vec2[1] * div)
 
-def gravity(object_list, acceleration):
-    for obj in object_list:
-        obj.vy += acceleration/number
 
 def after_collision(obj1, obj2, img):
     # Finding relative velocities
+
     vec = (obj1.x - obj2.x, obj1.y - obj2.y)
     perpv = (-vec[1], vec[0])
     vecv1 = (obj1.vx, obj1.vy)
@@ -39,18 +37,14 @@ def after_collision(obj1, obj2, img):
     chv1 = (sqcv1x, sqcv1y)
     chv2 = (sqcv2x, sqcv2y)
 
-    obj1.vx = chv1[0] + uncv1[0]
-    obj1.vy = chv1[1] + uncv1[1]
-    obj2.vx = chv2[0] + uncv2[0]
-    obj2.vy = chv2[1] + uncv2[1]
+    obj1.vx = (chv1[0] + uncv1[0])
+    obj1.vy = (chv1[1] + uncv1[1])
+    obj2.vx = (chv2[0] + uncv2[0])
+    obj2.vy = (chv2[1] + uncv2[1])
 
     #gives new position to nested objects
     while ((obj1.x - obj2.x) ** 2 + (obj1.y - obj2.y) ** 2)**0.5 < obj1.r + obj2.r:
-        obj1.move(5000);obj2.move(5000)
-
-    #Visulization
-    #cv2.arrowedLine(img, (round(obj1.x), round(obj1.y)), (round(obj1.x + chv1[0]*30), round(obj1.y + chv1[1]*15)), (0, 255, 0), 1)
-    #cv2.arrowedLine(img, (round(obj2.x), round(obj2.y)), (round(obj2.x + chv2[0]*30), round(obj2.y + chv2[1]*15)), (0, 255, 0), 1)
+        obj1.move(500);obj2.move(500)
 
 def collision(lst, img, sl, frame):
     global coll, number
@@ -59,8 +53,12 @@ def collision(lst, img, sl, frame):
             if ((lst[i].x - lst[j].x)**2 + (lst[i].y - lst[j].y)**2)**0.5 < (lst[i].r + lst[j].r):
                 after_collision(lst[i], lst[j], img)
                 coll += 1
-                if (frame, number) not in sl:
+                if (frame, i2) not in sl:
                     sl.append((frame, i2))
+
+def gravity(objl):
+    for i in objl:
+        i.vy += 0.003
 
 class obj:
     def __init__(self, mass, vx, vy, x, y, r, color, audio):
@@ -73,67 +71,71 @@ class obj:
         self.color = color
         self.audio = audio
     def move(self, number):
-        self.x += self.vx/number
-        self.y += self.vy/number
+        self.x += self.vx/(number)
+        self.y += self.vy/(number)
 
 
-writer = cv2.VideoWriter("output.avi", cv2.VideoWriter_fourcc(*"MJPG"), FPS,(WIDTH, HEIGHT))
+writer = cv2.VideoWriter("output_files/output_video.avi", cv2.VideoWriter_fourcc(*"MJPG"), FPS,(WIDTH, HEIGHT))
 
-objs = [obj(100000000, -0.5, 0, 600, 400, 50, (255, rand(255), rand(255)), "note.wav"),
-        obj(1, 0, 0, 300, 400, 50, (255, rand(255), rand(255)), "note.wav")]
+objs= []
+for i in range(1, 7):
+    for j in range(i):
+        objs.append(obj(10, 0, 0, i*30+30, j*30+30+(7-i)*10, 10, (255, rand(255), rand(255)), "not_yet"))
 
-"""
-for i in range(10):
-    for j in range(10):
-        objs.append(obj(10, rand(10), rand(10), i*50+50, j*50+50, 5, (255, rand(255), rand(255)), "note.wav"))
-        print(i*50+50, j*50+50)
-"""
+objs.append(obj(10, -2, -3, 500, 500, 10, (255, rand(255), rand(255)), "not_yet"))
 
 sl = []
 coll = 0
+times = 1000
 
-for frame in range(1500):
-    print(frame)
+
+for frame in range(1000):
+    print(frame, coll, end="\r")
 
     img = np.zeros((HEIGHT, WIDTH, 3), np.uint8)
 
     for i2 in range(number): # For fixing bugs
         collision(objs, img, sl, frame)
-        #gravity(objs, 10)
+        #gravity(objs)
         for i in objs:
             i.move(number)
             if i2 == number-1:
+                #Visulization
                 cv2.circle(img, (round(i.x), round(i.y)), i.r, (255, 255, 255), -1)
-                cv2.putText(img, "m = " + str(i.mass), (round(i.x), round(i.y)), cv2.FONT_HERSHEY_SIMPLEX, 0.2,
-                (0, 0, 255), 1)
-            if i.x + i.r > WIDTH:
-                i.vx = abs(i.vx) * -1
+                #cv2.arrowedLine(img, (round(i.x), round(i.y)), (round(i.x + i.vx*100), round(i.y + i.vy*100)), (255, 0, 0), 3)
+            if i.x + i.r >= WIDTH:
+                i.vx = -i.vx
                 coll += 1
+                if (frame, i2) not in sl:
+                    sl.append((frame, i2))
                 while i.x + i.r > WIDTH:
-                    i.move(500)
-                if (frame, number) not in sl:
-                    sl.append((frame, i2))
-            if i.r  > i.x:
-                coll += 1
+                    i.move(times)
+            if i.r  >= i.x:
                 i.vx = abs(i.vx)
-                while i.r  > i.x:
-                    i.move(500)
-                if (frame, number) not in sl:
-                    sl.append((frame, i2))
-            if i.y + i.r > HEIGHT:
                 coll += 1
-                i.vy = abs(i.vy) * -1
-                while i.y + i.r > HEIGHT:
-                    i.move(500)
-                if (frame, number) not in sl:
+                if (frame, i2) not in sl:
                     sl.append((frame, i2))
-            if i.r > i.y:
+
+                while i.r  >= i.x:
+                    i.move(times)
+            if i.y + i.r >= HEIGHT:
+                coll += 1
+                i.vy = -i.vy
+                if (frame, i2) not in sl:
+                    sl.append((frame, i2))
+                while i.y + i.r >= HEIGHT:
+                    i.move(times)
+
+            if i.r >= i.y:
+
                 coll += 1
                 i.vy = abs(i.vy)
-                while i.r > i.y:
-                    i.move(500)
-                if (frame, number) not in sl:
+                if (frame, i2) not in sl:
                     sl.append((frame, i2))
+                while i.r >= i.y:
+                    i.move(times)
+
+
     cv2.putText(img, str("Total Collision : " + str(coll)), (100, 100), cv2.FONT_HERSHEY_SIMPLEX, 1,
     (255,255,255), 2)
     writer.write(img.astype('uint8'))
@@ -141,10 +143,16 @@ for frame in range(1500):
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 sound = AudioSegment.silent(duration=int(frame/FPS*1000))
-audio = AudioSegment.from_wav("tick.wav")
+audio = AudioSegment.from_wav("./sound_files/tick.wav")
+counter = 0
+print("\n")
 for i in sl:
+    print("%" + str(int(counter/len(sl)*100)), end = "\r")
+    counter += 1
     sound = sound.overlay(audio, position=int((i[0]+(i[1]/number))/FPS*1000))
 
-sound.export("output.wav", format="wav")
-os.system("ffmpeg -i output.avi -i output.wav -c copy output.mkv")
+sound.export("output_files/output_sound.wav", format="wav")
+# U need to install fmmpeg first
+os.system("ffmpeg -i output_files/output_video.avi -i output_files/output_sound.wav -c copy output_files/final_output.mkv -y")
+
 writer.release()
