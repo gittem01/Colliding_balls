@@ -84,17 +84,15 @@ class obj: # May be improved
 writer = cv2.VideoWriter("output_files/output_video.avi", cv2.VideoWriter_fourcc(*"MJPG"), FPS,(WIDTH, HEIGHT))
 
 objs= []
-<<<<<<< HEAD
 
 objs.append(obj(10000, -2, 0, 500, 500, 10, (255, rand(255), rand(255)), "not_yet"))
 objs.append(obj(1, -2, 0, 300, 500, 10, (255, rand(255), rand(255)), "not_yet"))
-=======
+
 for i in range(1, 7):
     for j in range(i):
         objs.append(obj(10, 0, 0, i*150+150, j*150+30+(7-i)*10, 30, (255, rand(255), rand(255)), "not_yet"))
 
 objs.append(obj(10, 2, -3, 500, 500, 10, (255, rand(255), rand(255)), "not_yet"))
->>>>>>> 3851a0303da10387ae3466df39a79bd39a89ab75
 
 sl = []
 coll = 0
@@ -111,21 +109,21 @@ for frame in range(1000):
         for i in objs:
             i.move(number)
             if i2 == number-1:
-<<<<<<< HEAD
+
                 #Visualization
                 cv2.circle(img, (round(i.x), round(i.y)), i.r,
                 (255, 255, 255), -1, lineType=cv2.LINE_AA)
 
                 #cv2.arrowedLine(img, (round(i.x), round(i.y)), (round(i.x + i.vx*100),
                 # round(i.y + i.vy*100)), (255, 0, 0), 3, line_type=cv2.LINE_AA)
-=======
+
                 #Visulization
                 cv2.circle(img, (round(i.x), round(i.y)), i.r,
                 (255, 255, 255), -1, lineType=None)
 
                 cv2.arrowedLine(img, (round(i.x), round(i.y)), (round(i.x + i.vx*100),
                  round(i.y + i.vy*100)), (255, 0, 0), 3, line_type=cv2.LINE_AA)
->>>>>>> 3851a0303da10387ae3466df39a79bd39a89ab75
+
             if i.x + i.r >= WIDTH:
                 i.vx = -i.vx
                 coll += 1
