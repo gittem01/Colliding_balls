@@ -7,8 +7,8 @@ from pydub.playback import play
 import os
 import sys
 
-WIDTH = 1080
-HEIGHT = 640
+WIDTH = 1600
+HEIGHT = 900
 FPS = 60
 number = 10 # For better simulation // (+) With less bug and more accuracy BUT slower //
 
@@ -80,9 +80,9 @@ writer = cv2.VideoWriter("output_files/output_video.avi", cv2.VideoWriter_fourcc
 objs= []
 for i in range(1, 7):
     for j in range(i):
-        objs.append(obj(10, 0, 0, i*30+30, j*30+30+(7-i)*10, 10, (255, rand(255), rand(255)), "not_yet"))
+        objs.append(obj(10, 0, 0, i*150+150, j*150+30+(7-i)*10, 30, (255, rand(255), rand(255)), "not_yet"))
 
-objs.append(obj(10, -2, -3, 500, 500, 10, (255, rand(255), rand(255)), "not_yet"))
+objs.append(obj(10, 2, -3, 500, 500, 10, (255, rand(255), rand(255)), "not_yet"))
 
 sl = []
 coll = 0
@@ -101,8 +101,11 @@ for frame in range(1000):
             i.move(number)
             if i2 == number-1:
                 #Visulization
-                cv2.circle(img, (round(i.x), round(i.y)), i.r, (255, 255, 255), -1)
-                #cv2.arrowedLine(img, (round(i.x), round(i.y)), (round(i.x + i.vx*100), round(i.y + i.vy*100)), (255, 0, 0), 3)
+                cv2.circle(img, (round(i.x), round(i.y)), i.r,
+                (255, 255, 255), -1, lineType=None)
+
+                cv2.arrowedLine(img, (round(i.x), round(i.y)), (round(i.x + i.vx*100),
+                 round(i.y + i.vy*100)), (255, 0, 0), 3, line_type=cv2.LINE_AA)
             if i.x + i.r >= WIDTH:
                 i.vx = -i.vx
                 coll += 1
