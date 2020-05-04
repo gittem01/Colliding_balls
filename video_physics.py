@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 import time
+import math
+import random
 from random import randrange as rand
 from pydub import AudioSegment
 from pydub.playback import play
@@ -10,7 +12,7 @@ import sys
 WIDTH = 1600
 HEIGHT = 900
 FPS = 60
-number = 10 # For better simulation // (+) With less bug and more accuracy BUT slower //
+number = 100 # For better simulation // (+) With less bug and more accuracy BUT slower //
 
 def projection(vec1, vec2):
     div = (vec1[0] * vec2[0] + vec1[1] * vec2[1]) / (vec2[0]**2 + vec2[1]**2)
@@ -30,6 +32,9 @@ def after_collision(obj1, obj2, img):
     chv1 = projection(vecv1, vec)
     chv2 = projection(vecv2, vec)
 
+    # Some vector operation
+    # Source https://en.wikipedia.org/wiki/Elastic_collision
+
     sqcv1x = (chv1[0]*(obj1.mass-obj2.mass)+2*obj2.mass*chv2[0])/(obj1.mass + obj2.mass)
     sqcv1y = (chv1[1]*(obj1.mass-obj2.mass)+2*obj2.mass*chv2[1])/(obj1.mass + obj2.mass)
     sqcv2x = (chv2[0]*(obj2.mass-obj1.mass)+2*obj1.mass*chv1[0])/(obj1.mass + obj2.mass)
@@ -42,9 +47,10 @@ def after_collision(obj1, obj2, img):
     obj2.vx = (chv2[0] + uncv2[0])
     obj2.vy = (chv2[1] + uncv2[1])
 
-    #gives new position to nested objects
-    while ((obj1.x - obj2.x) ** 2 + (obj1.y - obj2.y) ** 2)**0.5 < obj1.r + obj2.r:
-        obj1.move(500);obj2.move(500)
+    #gives new position to nested objects (Only for one of them for now)
+    angleBetween = math.atan2(obj2.y-obj1.y, obj2.x - obj1.x)
+    obj2.x = math.cos(angleBetween)*(obj1.r + obj2.r) + obj1.x
+    obj2.y = math.sin(angleBetween)*(obj1.r + obj2.r) + obj1.y
 
 def collision(lst, img, sl, frame):
     global coll, number
@@ -58,9 +64,9 @@ def collision(lst, img, sl, frame):
 
 def gravity(objl):
     for i in objl:
-        i.vy += 0.003
+        i.vy += 0.01
 
-class obj:
+class obj: # May be improved
     def __init__(self, mass, vx, vy, x, y, r, color, audio):
         self.mass = mass
         self.vx = vx
@@ -78,11 +84,17 @@ class obj:
 writer = cv2.VideoWriter("output_files/output_video.avi", cv2.VideoWriter_fourcc(*"MJPG"), FPS,(WIDTH, HEIGHT))
 
 objs= []
+<<<<<<< HEAD
+
+objs.append(obj(10000, -2, 0, 500, 500, 10, (255, rand(255), rand(255)), "not_yet"))
+objs.append(obj(1, -2, 0, 300, 500, 10, (255, rand(255), rand(255)), "not_yet"))
+=======
 for i in range(1, 7):
     for j in range(i):
         objs.append(obj(10, 0, 0, i*150+150, j*150+30+(7-i)*10, 30, (255, rand(255), rand(255)), "not_yet"))
 
 objs.append(obj(10, 2, -3, 500, 500, 10, (255, rand(255), rand(255)), "not_yet"))
+>>>>>>> 3851a0303da10387ae3466df39a79bd39a89ab75
 
 sl = []
 coll = 0
@@ -90,7 +102,6 @@ times = 1000
 
 
 for frame in range(1000):
-    print(frame, coll, end="\r")
 
     img = np.zeros((HEIGHT, WIDTH, 3), np.uint8)
 
@@ -100,12 +111,21 @@ for frame in range(1000):
         for i in objs:
             i.move(number)
             if i2 == number-1:
+<<<<<<< HEAD
+                #Visualization
+                cv2.circle(img, (round(i.x), round(i.y)), i.r,
+                (255, 255, 255), -1, lineType=cv2.LINE_AA)
+
+                #cv2.arrowedLine(img, (round(i.x), round(i.y)), (round(i.x + i.vx*100),
+                # round(i.y + i.vy*100)), (255, 0, 0), 3, line_type=cv2.LINE_AA)
+=======
                 #Visulization
                 cv2.circle(img, (round(i.x), round(i.y)), i.r,
                 (255, 255, 255), -1, lineType=None)
 
                 cv2.arrowedLine(img, (round(i.x), round(i.y)), (round(i.x + i.vx*100),
                  round(i.y + i.vy*100)), (255, 0, 0), 3, line_type=cv2.LINE_AA)
+>>>>>>> 3851a0303da10387ae3466df39a79bd39a89ab75
             if i.x + i.r >= WIDTH:
                 i.vx = -i.vx
                 coll += 1
@@ -143,10 +163,11 @@ for frame in range(1000):
     (255,255,255), 2)
     writer.write(img.astype('uint8'))
     cv2.imshow("img", img)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    if cv2.waitKey(1) == ord("q"):
         break
+
 sound = AudioSegment.silent(duration=int(frame/FPS*1000))
-audio = AudioSegment.from_wav("./sound_files/tick.wav")
+audio = AudioSegment.from_wav("./sound_files/dup.wav")
 counter = 0
 print("\n")
 for i in sl:
@@ -156,6 +177,8 @@ for i in sl:
 
 sound.export("output_files/output_sound.wav", format="wav")
 # U need to install fmmpeg first
+# For windows add ffmpeg to the PATH
+
 os.system("ffmpeg -i output_files/output_video.avi -i output_files/output_sound.wav -c copy output_files/final_output.mkv -y")
 
 writer.release()
