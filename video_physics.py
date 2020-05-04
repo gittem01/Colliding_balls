@@ -88,16 +88,10 @@ objs= []
 objs.append(obj(10000, -2, 0, 500, 500, 10, (255, rand(255), rand(255)), "not_yet"))
 objs.append(obj(1, -2, 0, 300, 500, 10, (255, rand(255), rand(255)), "not_yet"))
 
-for i in range(1, 7):
-    for j in range(i):
-        objs.append(obj(10, 0, 0, i*150+150, j*150+30+(7-i)*10, 30, (255, rand(255), rand(255)), "not_yet"))
-
-objs.append(obj(10, 2, -3, 500, 500, 10, (255, rand(255), rand(255)), "not_yet"))
 
 sl = []
 coll = 0
 times = 1000
-
 
 for frame in range(1000):
 
@@ -116,13 +110,6 @@ for frame in range(1000):
 
                 #cv2.arrowedLine(img, (round(i.x), round(i.y)), (round(i.x + i.vx*100),
                 # round(i.y + i.vy*100)), (255, 0, 0), 3, line_type=cv2.LINE_AA)
-
-                #Visulization
-                cv2.circle(img, (round(i.x), round(i.y)), i.r,
-                (255, 255, 255), -1, lineType=None)
-
-                cv2.arrowedLine(img, (round(i.x), round(i.y)), (round(i.x + i.vx*100),
-                 round(i.y + i.vy*100)), (255, 0, 0), 3, line_type=cv2.LINE_AA)
 
             if i.x + i.r >= WIDTH:
                 i.vx = -i.vx
